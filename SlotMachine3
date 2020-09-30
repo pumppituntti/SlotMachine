@@ -1,0 +1,188 @@
+import java.io.Console;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.io.File;
+
+public class SlotMachine3 {
+    static int money = 25;
+    static int money2 = 25;
+    static int bet;
+    static Console c = System.console();
+    static int[] score = new int[100];
+    static int[] highscore = new int[5];
+    static boolean exit = false;
+    static int[] temp = new int[5];
+
+    public static void main(String[] args) throws IOException {
+        System.out.println("PLAYER 1");
+        System.out.println("Your money: " + money);
+        int i = 0;
+        while (money > 0) {
+            if (!cont())
+                break;
+            bet();
+            String[] line = fruits();
+            print(line);
+            money = money(check(line), money);
+            score[i] = money;
+            i++;
+        }
+        if (money <= 0)
+            System.out.println("\nPLAYER 1 \nGAME OVER");
+        highscore = HighScore(score);
+
+        if (!exit) {
+            System.out.println("\nPLAYER 2");
+            System.out.println("Your money: " + money2);
+            while (money2 > 0) {
+                if (!cont())
+                    break;
+                bet();
+                String[] line = fruits();
+                print(line);
+                money2 = money(check(line), money2);
+                score[i] = money2;
+                i++;
+            }
+            if (money2 <= 0)
+                System.out.println("\nPLAYER 2 \nGAME OVER");
+            highscore = HighScore(score);
+        }
+        temp = read();
+        write(sort(highscore, temp));
+    }
+
+    public static String[] fruits() {
+        int[] array = new int[3];
+        String[] fruits = new String[3];
+        for (int i = 0; i < 3; i++) {
+            array[i] = (int) (Math.random() * 3);
+            if (array[i] == 0)
+                fruits[i] = "@";
+            else if (array[i] == 1)
+                fruits[i] = "#";
+            else
+                fruits[i] = "$";
+        }
+        return fruits;
+    }
+
+    public static boolean check(String[] array) {
+        boolean win = false;
+        if (array[0].equals(array[1]) && array[0].equals(array[2]))
+            win = true;
+        if (win)
+            System.out.println("You win!");
+        else
+            System.out.println("You lose!");
+        return win;
+    }
+
+    public static void print(String[] array) {
+        for (int i = 0; i < array.length; i++) {
+            System.out.print(array[i] + " ");
+        }
+        System.out.println();
+    }
+
+    public static void bet() {
+        System.out.println("Place your bet");
+        bet = Integer.parseInt(c.readLine());
+    }
+
+    public static int money(boolean win, int cash) {
+        if (win)
+            cash = cash + bet * 3;
+        else
+            cash = cash - bet;
+        System.out.println("Your money: " + cash);
+        return cash;
+    }
+
+    public static boolean cont() {
+        boolean cont;
+        System.out.println("\nPress SPACE to continue or ANY KEY to end turn or type EXIT for exit the game...");
+        String input = c.readLine();
+        if (input.equals(" "))
+            cont = true;
+        else
+            cont = false;
+        if (input.equalsIgnoreCase("exit"))
+            exit = true;
+        return cont;
+    }
+
+    public static int[] HighScore(int[] array) {
+        int[] sortArray = new int[5];
+        for (int i = 0; i < array.length; i++) {
+            int max = i;
+            for (int j = i + 1; j < array.length; j++) {
+                if (array[j] > array[max]) {
+                    max = j;
+                }
+            }
+            int tmp = array[i];
+            array[i] = array[max];
+            array[max] = tmp;
+        }
+        System.out.println("HIGH SCORE LIST");
+        for (int i = 0; i < sortArray.length; i++) {
+            sortArray[i] = array[i];
+            if (sortArray[i] != 0)
+                System.out.println(sortArray[i]);
+        }
+        return sortArray;
+    }
+
+    public static void write(int[] array) throws IOException {
+        String myString = "";
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != 0) {
+                int num = array[i];
+                myString = myString + String.valueOf(num) + "\n";
+                Files.writeString(Paths.get("highscore.txt"), myString, Charset.defaultCharset());
+            }
+        }
+    }
+
+    public static int[] read() throws IOException {
+        String textFileName = "highscore.txt";
+        List<String> allLines = Files.readAllLines(new File(textFileName).toPath(), Charset.defaultCharset());
+        int[] numbers = new int[allLines.size()];
+
+        for (int i = 0; i < allLines.size(); i++) {
+            String num = allLines.get(i);
+            numbers[i] = Integer.parseInt(allLines.get(i));
+        }
+        return numbers;
+    }
+
+    public static int[] sort(int[] array, int[] file) {
+        int[] temp = new int[10];
+        int[] done = new int[5];
+        for (int i = 0; i < array.length; i++) {
+            temp[i] = array[i];
+        }
+        for (int i = 0; i < file.length; i++) {
+            temp[array.length + i] = file[i];
+        }
+        for (int i = 0; i < temp.length; i++) {
+            int max = i;
+            for (int j = i + 1; j < temp.length; j++) {
+                if (temp[j] > temp[max]) {
+                    max = j;
+                }
+            }
+            int tmp = temp[i];
+            temp[i] = temp[max];
+            temp[max] = tmp;
+        }
+        for (int i = 0; i < 5; i++) {
+            done[i] = temp[i];
+        }
+        return done;
+    }
+}
